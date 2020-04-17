@@ -3,6 +3,7 @@ package pagerduty
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/heimweh/go-pagerduty/pagerduty"
 	"log"
 	"time"
 
@@ -88,4 +89,27 @@ func flattenSlice(v []interface{}) interface{} {
 		return nil
 	}
 	return string(b)
+}
+
+func expandTeams(v interface{}) []*pagerduty.TeamReference {
+	var teams []*pagerduty.TeamReference
+
+	for _, t := range v.([]interface{}) {
+		team := &pagerduty.TeamReference{
+			ID:   t.(string),
+			Type: "team_reference",
+		}
+		teams = append(teams, team)
+	}
+
+	return teams
+}
+
+func flattenTeams(teams []*pagerduty.TeamReference) []string {
+	res := make([]string, len(teams))
+	for i, t := range teams {
+		res[i] = t.ID
+	}
+
+	return res
 }

@@ -216,26 +216,3 @@ func flattenEscalationRules(v []*pagerduty.EscalationRule) []map[string]interfac
 
 	return escalationRules
 }
-
-func expandTeams(v interface{}) []*pagerduty.TeamReference {
-	var teams []*pagerduty.TeamReference
-
-	for _, t := range v.([]interface{}) {
-		team := &pagerduty.TeamReference{
-			ID:   t.(string),
-			Type: "team_reference",
-		}
-		teams = append(teams, team)
-	}
-
-	return teams
-}
-
-func flattenTeams(teams []*pagerduty.TeamReference) []string {
-	res := make([]string, len(teams))
-	for i, t := range teams {
-		res[i] = t.ID
-	}
-
-	return res
-}

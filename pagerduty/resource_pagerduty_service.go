@@ -1,6 +1,7 @@
 package pagerduty
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -32,6 +33,13 @@ func resourcePagerDutyService() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Managed by Terraform",
+			},
+			"teams": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"alert_creation": {
 				Type:     schema.TypeString,
@@ -213,6 +221,10 @@ func buildServiceStruct(d *schema.ResourceData) (*pagerduty.Service, error) {
 		service.Description = attr.(string)
 	}
 
+	if attr, ok := d.GetOk("teams"); ok {
+		service.Teams = expandTeams(attr.([]interface{}))
+	}
+
 	if attr, ok := d.GetOk("auto_resolve_timeout"); ok {
 		if attr.(string) != "null" {
 			if val, err := strconv.Atoi(attr.(string)); err == nil {
@@ -314,6 +326,9 @@ func resourcePagerDutyServiceRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("created_at", service.CreatedAt)
 		d.Set("escalation_policy", service.EscalationPolicy.ID)
 		d.Set("description", service.Description)
+		if err := d.Set("teams", flattenTeams(service.Teams)); err != nil {
+			return resource.NonRetryableError(fmt.Errorf("error setting teams: %s", err))
+		}
 		if service.AutoResolveTimeout == nil {
 			d.Set("auto_resolve_timeout", "null")
 		} else {
